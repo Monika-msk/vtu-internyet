@@ -27,19 +27,22 @@
       <p>Get a single email every day at <b>9:00 AM IST</b> with new internships posted on VTU Internyet. Your email will only be used for sending these alerts.</p>
 
       <div class="block">
-        <div class="label">Step 1 — Open the subscription form</div>
-        <p>
-          <a class="btn" id="formLink" href="#" target="_blank" rel="noopener">Open Subscription Form</a>
-        </p>
-        <p class="muted">If the button is disabled, the admin hasn't linked the form yet.</p>
+        <div class="label">Subscribe</div>
+        <form id="subscribeForm">
+          <input type="email" id="email" name="email" placeholder="you@example.com" required style="width:100%;padding:12px 14px;border-radius:10px;border:1px solid rgba(255,255,255,.12);background:#0e1530;color:#e7eefc;outline:none" />
+          <div style="display:flex;gap:8px;margin-top:12px">
+            <button type="submit" class="btn">Subscribe</button>
+            <span id="status" class="muted" aria-live="polite"></span>
+          </div>
+        </form>
       </div>
 
       <div class="block">
         <div class="label">How this works</div>
         <ol>
-          <li>You submit your email via a Google Form.</li>
-          <li>Your email is saved in a Google Sheet managed by the project admin.</li>
-          <li>The system fetches the sheet as a read-only CSV and sends alerts every morning.</li>
+          <li>You submit your email using the form above.</li>
+          <li>Your email is stored securely on our server.</li>
+          <li>The system fetches the subscriber list and sends alerts every morning.</li>
           <li>You can unsubscribe anytime via the link in the email footer (coming soon).</li>
         </ol>
       </div>
@@ -47,29 +50,12 @@
       <div class="block">
         <div class="label">For Admins</div>
         <ol>
-          <li>Create a Google Form with one field: <span class="mono">Email</span> (response validation: email).</li>
-          <li>Connect it to a Google Sheet (Responses → Link to Sheets).</li>
-          <li>In the Sheet: File → Share → <b>Publish to the web</b> → select the responses sheet → format: <b>Comma-separated values (.csv)</b> → Publish.</li>
-          <li>Copy the public CSV link and save it as a GitHub secret: <span class="mono">SUBSCRIBERS_CSV_URL</span>.</li>
-          <li>Also set sender credentials: <span class="mono">SENDER_EMAIL</span>, <span class="mono">SENDER_PASSWORD</span> (Gmail App Password) in repo secrets.</li>
-          <li>Optional: Put your Google Form link below so the Subscribe button works.</li>
+          <li>Deploy the backend (FastAPI) on Render (free): see <span class="mono">render.yaml</span>.</li>
+          <li>Set GitHub secrets: <span class="mono">SENDER_EMAIL</span>, <span class="mono">SENDER_PASSWORD</span> (Gmail App Password).</li>
+          <li>Set <span class="mono">SUBSCRIBERS_CSV_URL</span> to your backend's <span class="mono">/subscribers.csv</span> URL.</li>
+          <li>Update the script tag below to point <span class="mono">BACKEND_BASE_URL</span> to your backend URL.</li>
         </ol>
         <p class="muted">GitHub Actions runs this job daily at 03:30 UTC (09:00 IST). See <span class="mono">.github/workflows/internship-watcher.yml</span>.</p>
-        <div class="block" style="margin-top:12px">
-          <div class="label">Configure Subscribe button</div>
-          <p>Replace the placeholder below by editing this file and inserting your public Google Form link:</p>
-          <pre class="muted"><code>&lt;script&gt;
-// Set your Google Form link here
-const GOOGLE_FORM_LINK = ""; // e.g., "https://docs.google.com/forms/d/e/.../viewform"
-if (GOOGLE_FORM_LINK) {
-  const a = document.getElementById('formLink');
-  a.href = GOOGLE_FORM_LINK;
-} else {
-  document.getElementById('formLink').classList.add('muted');
-  document.getElementById('formLink').style.pointerEvents = 'none';
-}
-&lt;/script&gt;</code></pre>
-        </div>
       </div>
 
       <p class="muted">Made with ❤ for students. This site can be served via GitHub Pages (Settings → Pages → Branch: <span class="mono">main</span>, Folder: <span class="mono">/docs</span>).</p>
@@ -77,15 +63,35 @@ if (GOOGLE_FORM_LINK) {
   </div>
 
   <script>
-    // Set your Google Form link here (admin should edit and set this)
-    const GOOGLE_FORM_LINK = ""; // e.g., "https://docs.google.com/forms/d/e/.../viewform"
-    const a = document.getElementById('formLink');
-    if (GOOGLE_FORM_LINK) {
-      a.href = GOOGLE_FORM_LINK;
-    } else {
-      a.classList.add('muted');
-      a.style.pointerEvents = 'none';
-    }
+    // Backend base URL (set this to your Render URL), e.g., "https://vtu-subs.onrender.com"
+    const BACKEND_BASE_URL = "";
+    const form = document.getElementById('subscribeForm');
+    const statusEl = document.getElementById('status');
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      statusEl.textContent = '';
+      const email = document.getElementById('email').value.trim();
+      if (!BACKEND_BASE_URL) {
+        statusEl.textContent = 'Subscription backend is not configured yet.';
+        return;
+      }
+      try {
+        const res = await fetch(`${BACKEND_BASE_URL}/subscribe`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email })
+        });
+        const data = await res.json();
+        if (res.ok && data?.ok) {
+          statusEl.textContent = data.message || 'Subscribed';
+          form.reset();
+        } else {
+          statusEl.textContent = data?.detail || data?.message || 'Failed to subscribe';
+        }
+      } catch (err) {
+        statusEl.textContent = 'Network error. Please try again later.';
+      }
+    });
   </script>
 </body>
 </html>
