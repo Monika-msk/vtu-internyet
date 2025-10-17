@@ -64,7 +64,7 @@
 
   <script>
     // Backend base URL (set this to your Render URL), e.g., "https://vtu-subs.onrender.com"
-    const BACKEND_BASE_URL = "";
+    const BACKEND_BASE_URL = "https://vtu-internyet.onrender.com";
     const form = document.getElementById('subscribeForm');
     const statusEl = document.getElementById('status');
     form.addEventListener('submit', async (e) => {
@@ -75,8 +75,13 @@
         statusEl.textContent = 'Subscription backend is not configured yet.';
         return;
       }
+      // Normalize base URL to avoid double slashes
+      const base = BACKEND_BASE_URL.replace(/\/+$/, '');
+      const submitBtn = form.querySelector('button[type="submit"]');
+      submitBtn.disabled = true;
+      submitBtn.textContent = 'Subscribing...';
       try {
-        const res = await fetch(`${BACKEND_BASE_URL}/subscribe`, {
+        const res = await fetch(`${base}/subscribe`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ email })
@@ -91,6 +96,8 @@
       } catch (err) {
         statusEl.textContent = 'Network error. Please try again later.';
       }
+      submitBtn.disabled = false;
+      submitBtn.textContent = 'Subscribe';
     });
   </script>
 </body>
