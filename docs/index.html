@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>VTU Internship Watcher – Subscribe</title>
+  <style>
+    :root { --bg:#0b1020; --card:#121a33; --fg:#e7eefc; --muted:#a9b4cc; --brand:#4f7cff; }
+    body { margin:0; font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; background:linear-gradient(180deg, #0b1020, #0a0f1f 40%, #0a0f1f); color:var(--fg); }
+    .wrap { max-width:780px; margin:40px auto; padding:0 16px; }
+    .card { background:var(--card); border:1px solid rgba(255,255,255,.06); border-radius:16px; padding:24px; box-shadow:0 10px 30px rgba(0,0,0,.3); }
+    h1 { margin:0 0 8px; font-size:28px; }
+    p { color:var(--muted); line-height:1.6; }
+    .block { margin-top:20px; padding:16px; border-radius:12px; background:rgba(255,255,255,.03); border:1px solid rgba(255,255,255,.06); }
+    .label { font-weight:600; margin-bottom:6px; color:#c8d6ff; }
+    a.btn { display:inline-block; background:var(--brand); color:white; text-decoration:none; padding:12px 16px; border-radius:10px; font-weight:600; box-shadow:0 6px 16px rgba(79,124,255,.35); }
+    code, .mono { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace; font-size: 90%; }
+    ol { margin:8px 0 0 18px; }
+    li { margin:6px 0; }
+    .muted { color:var(--muted); }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="card">
+      <h1>Subscribe to Daily VTU Internship Alerts</h1>
+      <p>Get a single email every day at <b>9:00 AM IST</b> with new internships posted on VTU Internyet. Your email will only be used for sending these alerts.</p>
+
+      <div class="block">
+        <div class="label">Step 1 — Open the subscription form</div>
+        <p>
+          <a class="btn" id="formLink" href="#" target="_blank" rel="noopener">Open Subscription Form</a>
+        </p>
+        <p class="muted">If the button is disabled, the admin hasn't linked the form yet.</p>
+      </div>
+
+      <div class="block">
+        <div class="label">How this works</div>
+        <ol>
+          <li>You submit your email via a Google Form.</li>
+          <li>Your email is saved in a Google Sheet managed by the project admin.</li>
+          <li>The system fetches the sheet as a read-only CSV and sends alerts every morning.</li>
+          <li>You can unsubscribe anytime via the link in the email footer (coming soon).</li>
+        </ol>
+      </div>
+
+      <div class="block">
+        <div class="label">For Admins</div>
+        <ol>
+          <li>Create a Google Form with one field: <span class="mono">Email</span> (response validation: email).</li>
+          <li>Connect it to a Google Sheet (Responses → Link to Sheets).</li>
+          <li>In the Sheet: File → Share → <b>Publish to the web</b> → select the responses sheet → format: <b>Comma-separated values (.csv)</b> → Publish.</li>
+          <li>Copy the public CSV link and save it as a GitHub secret: <span class="mono">SUBSCRIBERS_CSV_URL</span>.</li>
+          <li>Also set sender credentials: <span class="mono">SENDER_EMAIL</span>, <span class="mono">SENDER_PASSWORD</span> (Gmail App Password) in repo secrets.</li>
+          <li>Optional: Put your Google Form link below so the Subscribe button works.</li>
+        </ol>
+        <p class="muted">GitHub Actions runs this job daily at 03:30 UTC (09:00 IST). See <span class="mono">.github/workflows/internship-watcher.yml</span>.</p>
+        <div class="block" style="margin-top:12px">
+          <div class="label">Configure Subscribe button</div>
+          <p>Replace the placeholder below by editing this file and inserting your public Google Form link:</p>
+          <pre class="muted"><code>&lt;script&gt;
+// Set your Google Form link here
+const GOOGLE_FORM_LINK = ""; // e.g., "https://docs.google.com/forms/d/e/.../viewform"
+if (GOOGLE_FORM_LINK) {
+  const a = document.getElementById('formLink');
+  a.href = GOOGLE_FORM_LINK;
+} else {
+  document.getElementById('formLink').classList.add('muted');
+  document.getElementById('formLink').style.pointerEvents = 'none';
+}
+&lt;/script&gt;</code></pre>
+        </div>
+      </div>
+
+      <p class="muted">Made with ❤ for students. This site can be served via GitHub Pages (Settings → Pages → Branch: <span class="mono">main</span>, Folder: <span class="mono">/docs</span>).</p>
+    </div>
+  </div>
+
+  <script>
+    // Set your Google Form link here (admin should edit and set this)
+    const GOOGLE_FORM_LINK = ""; // e.g., "https://docs.google.com/forms/d/e/.../viewform"
+    const a = document.getElementById('formLink');
+    if (GOOGLE_FORM_LINK) {
+      a.href = GOOGLE_FORM_LINK;
+    } else {
+      a.classList.add('muted');
+      a.style.pointerEvents = 'none';
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,64 @@
+name: VTU Internship Watcher
+
+on:
+  schedule:
+    # Run daily at 09:00 IST (03:30 UTC)
+    - cron: '30 3 * * *'
+  workflow_dispatch: # Allow manual triggering
+
+jobs:
+  check-internships:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+        
+    - name: Cache pip dependencies
+      uses: actions/cache@v3
+      with:
+        path: ~/.cache/pip
+        key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
+        restore-keys: |
+          ${{ runner.os }}-pip-
+          
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+        
+    - name: Load previous state
+      uses: actions/cache@v3
+      with:
+        path: seen_internships.json
+        key: internships-${{ github.run_id }}
+        restore-keys: |
+          internships-
+          
+    - name: Run internship watcher
+      env:
+        SENDER_EMAIL: ${{ secrets.SENDER_EMAIL }}
+        SENDER_PASSWORD: ${{ secrets.SENDER_PASSWORD }}
+        RECIPIENT_EMAIL: ${{ secrets.RECIPIENT_EMAIL }}
+        SUBSCRIBERS_CSV_URL: ${{ secrets.SUBSCRIBERS_CSV_URL }}
+      run: python internship_watcher.py
+      
+    - name: Upload logs
+      if: always()
+      uses: actions/upload-artifact@v3
+      with:
+        name: internship-watcher-logs
+        path: internship_watcher.log
+        retention-days: 30
+        
+    - name: Save state for next run
+      uses: actions/cache/save@v3
+      if: always()
+      with:
+        path: seen_internships.json
+        key: internships-${{ github.run_id }}
