@@ -2,8 +2,8 @@ name: VTU Internship Watcher
 
 on:
   schedule:
-    # Run daily at 11:23 PM IST (17:53 UTC)
-    - cron: '53 17 * * *'
+    # Run daily at 11:40 PM IST (18:10 UTC)
+    - cron: '10 18 * * *'
   workflow_dispatch: # Allow manual triggering
 
 jobs:
