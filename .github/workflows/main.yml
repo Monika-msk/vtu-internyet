@@ -1,0 +1,5 @@
+on:
+  schedule:
+    # Run daily at 12:08 AM IST (06:38 UTC)
+    - cron: '38 6 * * *'
+  workflow_dispatch: # allows manual run now
